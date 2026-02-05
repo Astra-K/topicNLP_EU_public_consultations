@@ -42,7 +42,10 @@ PREPROCESSED_FILE = OUTPUT_DIR / 'preprocessed_responses.json'
 RESULTS_FILE = OUTPUT_DIR / 'complete_topic_modeling_results.json'
 PLOT_FILE = OUTPUT_DIR / 'all_approaches_comparison.png'
 
-
+# specifiable parameters
+# top words parameter, Training configuration
+n_words = 10
+n_topics = 3
 # ============ STEP 1: TEXT PREPROCESSING ============
 
 def detect_language(text):
@@ -88,7 +91,7 @@ def preprocess_text(text):
     # Spellcheck
     text = spellcheck(text)
     
-    # Tokenize
+    # Tokenise
     tokens = tokenize(text)
     
     # Remove stopwords
@@ -197,8 +200,7 @@ def apply_lsa(tfidf_matrix, n_topics=5):
     return lsa, lsa_output
 
 # ============ STEP 5: EVALUATION ============
-# top words parameter
-n_words = 10
+
 
 def get_top_words_per_topic(model, feature_names, n_words):
     """Extract top words for each topic"""
@@ -209,12 +211,6 @@ def get_top_words_per_topic(model, feature_names, n_words):
         topics[f'Topic {topic_id}'] = top_words
     
     return topics
-
-def calculate_perplexity(model, data_matrix):
-    """Calculate perplexity for LDA"""
-    if hasattr(model, 'perplexity'):
-        return model.perplexity(data_matrix)
-    return None
 
 def calculate_silhouette_score(representations):
     """Calculate average internal similarity"""
@@ -289,8 +285,6 @@ full_texts, noun_texts, metadata = prepare_documents(processed_responses)
 print(f"Full texts: {len(full_texts)} documents")
 print(f"Noun texts: {len(noun_texts)} documents")
 
-# Training configuration
-n_topics = 3
 results = {}
 
 # ============ TRAIN ON FULL TEXT ============
@@ -365,6 +359,7 @@ print("LSA Topics:")
 for topic, words in lsa_topics_nouns.items():
     print(f"  {topic}: {', '.join(words)}")
 
+
 results['Nouns Only_LDA'] = {
     'model': lda_nouns,
     'output': lda_out_nouns,
@@ -390,6 +385,10 @@ print("=" * 70)
 
 comparison_df = evaluate_all_models(results)
 print("\n", comparison_df.to_string(index=False))
+df_lsa_topics_nouns = pd.DataFrame(lsa_topics_nouns)
+df_lsa_topics_full = pd.DataFrame(lsa_topics_full)
+df_lda_topics_nouns = pd.DataFrame(lda_topics_nouns)
+df_lda_topics_full = pd.DataFrame(lda_topics_full)
 
 # Save comprehensive results
 save_results = {
@@ -409,7 +408,7 @@ save_results = {
 with open(RESULTS_FILE, 'w', encoding='utf-8') as f:
     json.dump(save_results, f, indent=2, ensure_ascii=False)
 
-# Visualization: Compare all four approaches
+# Visualisation: Compare all four approaches
 print("\n[Creating visualizations]...")
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
