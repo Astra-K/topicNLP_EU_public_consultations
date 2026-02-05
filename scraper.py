@@ -3,12 +3,18 @@ from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 import json
 import os
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).parent.absolute()
+
+DATA_DIR = SCRIPT_DIR / 'data'
+INPUT_FILE = DATA_DIR / 'eu_consultation_responses.json'
 
 async def scrape_consultations():
     base_url = 'https://ec.europa.eu/info/law/better-regulation/have-your-say/initiatives/14671-On-farm-animal-welfare-for-certain-animals-modernisation-of-EU-legislation/feedback_en?p_id=19848&page='
     
     all_responses = []
-    output_file = '/Users/ansgarkamratowski/Desktop/eu_consultation_responses.json'
+    
     save_interval = 10  # Save every 10 pages
     max_retries = 3
     
@@ -69,19 +75,19 @@ async def scrape_consultations():
             
             # Save periodically
             if page_num % save_interval == 0:
-                with open(output_file, 'w', encoding='utf-8') as f:
+                with open(INPUT_FILE, 'w', encoding='utf-8') as f:
                     json.dump(all_responses, f, indent=2, ensure_ascii=False)
                 print(f'  💾 Checkpoint: Saved {len(all_responses)} responses so far\n')
         
         await browser.close()
     
     # Final save
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(INPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(all_responses, f, indent=2, ensure_ascii=False)
     
     print(f'\n' + '='*60)
     print(f'✓ COMPLETE: Total {len(all_responses)} responses extracted')
-    print(f'✓ Saved to: {output_file}')
+    print(f'✓ Saved to: {INPUT_FILE}')
     print(f'='*60)
 
 # Run it
